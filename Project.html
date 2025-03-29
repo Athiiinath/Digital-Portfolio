@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ultimate RPSLS</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --secondary: #3498db;
+            --accent: #e74c3c;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1abc9c, #3498db);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 2rem;
+            color: white;
+        }
+
+        .game-container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            width: 90%;
+            max-width: 800px;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 2rem;
+            color: var(--primary);
+            font-size: 2.5rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .choices-container {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .choice-btn {
+            background: white;
+            border: 3px solid var(--secondary);
+            border-radius: 15px;
+            padding: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            aspect-ratio: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .choice-btn:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.4);
+            background: var(--secondary);
+            color: white;
+        }
+
+        .choice-btn i {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .battle-area {
+            display: flex;
+            justify-content: space-around;
+            margin: 2rem 0;
+            position: relative;
+        }
+
+        .player-area, .computer-area {
+            text-align: center;
+            padding: 1rem;
+            border-radius: 15px;
+            width: 200px;
+            transition: all 0.3s ease;
+        }
+
+        .selected-choice {
+            font-size: 4rem;
+            margin: 1rem 0;
+            animation: bounce 0.5s ease;
+        }
+
+        .result-display {
+            text-align: center;
+            font-size: 1.5rem;
+            margin: 2rem 0;
+            padding: 1rem;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.9);
+            color: var(--primary);
+        }
+
+        .score-board {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .score-box {
+            background: white;
+            padding: 1rem 2rem;
+            border-radius: 10px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+            color: var(--primary);
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+        }
+
+        .win {
+            background: #2ecc71 !important;
+            color: white !important;
+        }
+
+        .lose {
+            background: #e74c3c !important;
+            color: white !important;
+        }
+
+        .draw {
+            background: #f1c40f !important;
+            color: white !important;
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <h1>Rock Paper Scissors Lizard Spock</h1>
+        
+        <div class="score-board">
+            <div class="score-box">
+                <h3>Player</h3>
+                <p id="playerScore">0</p>
+            </div>
+            <div class="score-box">
+                <h3>Computer</h3>
+                <p id="computerScore">0</p>
+            </div>
+        </div>
+
+        <div class="choices-container">
+            <div class="choice-btn" data-choice="rock">
+                <i class="fas fa-hand-rock"></i>
+                Rock
+            </div>
+            <div class="choice-btn" data-choice="paper">
+                <i class="fas fa-hand-paper"></i>
+                Paper
+            </div>
+            <div class="choice-btn" data-choice="scissors">
+                <i class="fas fa-hand-scissors"></i>
+                Scissors
+            </div>
+            <div class="choice-btn" data-choice="lizard">
+                <i class="fas fa-hand-lizard"></i>
+                Lizard
+            </div>
+            <div class="choice-btn" data-choice="spock">
+                <i class="fas fa-hand-spock"></i>
+                Spock
+            </div>
+        </div>
+
+        <div class="battle-area">
+            <div class="player-area">
+                <h2>Your Choice</h2>
+                <div class="selected-choice" id="playerChoice">-</div>
+            </div>
+            <div class="computer-area">
+                <h2>Computer's Choice</h2>
+                <div class="selected-choice" id="computerChoice">-</div>
+            </div>
+        </div>
+
+        <div class="result-display" id="result">
+            Choose your weapon!
+        </div>
+    </div>
+
+    <script>
+        const choices = ['rock', 'paper', 'scissors', 'lizard', 'spock'];
+        const playerScoreEl = document.getElementById('playerScore');
+        const computerScoreEl = document.getElementById('computerScore');
+        let playerScore = 0, computerScore = 0;
+
+        document.querySelectorAll('.choice-btn').forEach(btn => {
+            btn.addEventListener('click', () => playGame(btn.dataset.choice));
+        });
+
+        function playGame(playerChoice) {
+            const computerChoice = choices[Math.floor(Math.random() * 5)];
+            const result = getResult(playerChoice, computerChoice);
+            
+            // Update displays
+            document.getElementById('playerChoice').innerHTML = 
+                `<i class="fas fa-hand-${playerChoice}"></i>`;
+            document.getElementById('computerChoice').innerHTML = 
+                `<i class="fas fa-hand-${computerChoice}"></i>`;
+            
+            // Update scores
+            if(result === 'win') playerScore++;
+            if(result === 'lose') computerScore++;
+            playerScoreEl.textContent = playerScore;
+            computerScoreEl.textContent = computerScore;
+
+            // Update result display
+            const resultEl = document.getElementById('result');
+            resultEl.textContent = `You ${result}! ${playerChoice} beats ${computerChoice}`;
+            resultEl.className = `result-display ${result}`;
+        }
+
+        function getResult(p, c) {
+            if(p === c) return 'draw';
+            const rules = {
+                rock: ['scissors', 'lizard'],
+                paper: ['rock', 'spock'],
+                scissors: ['paper', 'lizard'],
+                lizard: ['spock', 'paper'],
+                spock: ['scissors', 'rock']
+            };
+            return rules[p].includes(c) ? 'win' : 'lose';
+        }
+    </script>
+</body>
+</html>
